@@ -1,0 +1,51 @@
+services:
+  gherkin-web:
+    build: .
+    container_name: gherkin-taster-web
+    ports:
+      - "8100:8000"  # External port 8100 to avoid conflict with IDD (8000)
+    environment:
+      - LINEAR_API_TOKEN=${LINEAR_API_TOKEN}
+      - GITHUB_API_TOKEN=${GITHUB_API_TOKEN}
+      - LLM_API_KEY=${LLM_API_KEY:-}
+      - REDIS_URL=redis://gherkin-redis:6379/0
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+    volumes:
+      - ./backend:/app/backend  # Live code reload in development
+      - ./app:/app/app
+    networks:
+      - gherkin-network
+      - buckler-shared  # Connect to shared network for IAM integration
+    depends_on:
+      gherkin-redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  gherkin-redis:
+    image: redis:7-alpine
+    container_name: gherkin-taster-redis
+    ports:
+      - "6380:6379"  # External port 6380 to avoid conflict with IDD Redis (6379)
+    volumes:
+      - gherkin-redis-data:/data
+    networks:
+      - gherkin-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+networks:
+  gherkin-network:
+    driver: bridge
+
+  buckler-shared:
+    external: true
+    name: buckler_ai_shared_network  # Shared network with IDD/IAM
+
+volumes:
+  gherkin-redis-data:
+    driver: local

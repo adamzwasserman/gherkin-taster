@@ -1,0 +1,46 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Features - Gherkin Taster{% endblock %}
+
+{% block content %}
+<div class="px-4 sm:px-0">
+    <h2 class="text-2xl font-bold text-gray-900 mb-6">My Features</h2>
+
+    <!-- Feature List -->
+    <div class="bg-white shadow overflow-hidden sm:rounded-md">
+        <ul role="list" class="divide-y divide-gray-200">
+            {% if features %}
+                {% for feature in features %}
+                <li>
+                    <a href="/features/{{ feature.issue_id }}" class="block hover:bg-gray-50">
+                        <div class="px-4 py-4 sm:px-6">
+                            <div class="flex items-center justify-between">
+                                <p class="text-sm font-medium text-indigo-600 truncate">
+                                    {{ feature.issue_id }}
+                                </p>
+                                <div class="ml-2 flex-shrink-0 flex">
+                                    <p class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        {{ feature.status }}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="mt-2 sm:flex sm:justify-between">
+                                <div class="sm:flex">
+                                    <p class="flex items-center text-sm text-gray-500">
+                                        {{ feature.title }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </li>
+                {% endfor %}
+            {% else %}
+                <li class="px-4 py-8 text-center">
+                    <p class="text-gray-500">No features assigned to you</p>
+                </li>
+            {% endif %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

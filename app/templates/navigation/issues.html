@@ -1,0 +1,90 @@
+{% extends "base/layout.html" %}
+
+{% block title %}{{ project.name }} Issues - Gherkin Taster{% endblock %}
+
+{% block content %}
+<div class="px-4 sm:px-0">
+    <!-- Breadcrumb -->
+    <nav class="flex mb-4" aria-label="Breadcrumb">
+        <ol class="flex items-center space-x-2">
+            <li>
+                <a href="/navigation/projects" class="text-gray-500 hover:text-gray-700">Projects</a>
+            </li>
+            <li class="flex items-center">
+                <svg class="flex-shrink-0 h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                </svg>
+                <span class="ml-2 text-gray-900">{{ project.name }}</span>
+            </li>
+        </ol>
+    </nav>
+
+    <h2 class="text-2xl font-bold text-gray-900 mb-6">Issues in {{ project.name }}</h2>
+
+    <!-- Filter Tabs -->
+    <div class="border-b border-gray-200 mb-6">
+        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+            <a
+                href="?status=pending"
+                class="{% if current_status == 'pending' %}border-indigo-500 text-indigo-600{% else %}border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
+            >
+                Pending Review
+            </a>
+            <a
+                href="?status=approved"
+                class="{% if current_status == 'approved' %}border-indigo-500 text-indigo-600{% else %}border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
+            >
+                Approved
+            </a>
+            <a
+                href="?status=all"
+                class="{% if current_status == 'all' %}border-indigo-500 text-indigo-600{% else %}border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
+            >
+                All Issues
+            </a>
+        </nav>
+    </div>
+
+    <!-- Issue List -->
+    <div class="bg-white shadow overflow-hidden sm:rounded-md">
+        <ul role="list" class="divide-y divide-gray-200">
+            {% if issues %}
+                {% for issue in issues %}
+                <li>
+                    <a href="/features/{{ issue.id }}" class="block hover:bg-gray-50">
+                        <div class="px-4 py-4 sm:px-6">
+                            <div class="flex items-center justify-between">
+                                <p class="text-sm font-medium text-indigo-600 truncate">
+                                    {{ issue.id }}
+                                </p>
+                                <div class="ml-2 flex-shrink-0 flex space-x-2">
+                                    {% if issue.assignee %}
+                                    <p class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                        {{ issue.assignee.name }}
+                                    </p>
+                                    {% endif %}
+                                    <p class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        {{ issue.status }}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="mt-2 sm:flex sm:justify-between">
+                                <div class="sm:flex">
+                                    <p class="flex items-center text-sm text-gray-500">
+                                        {{ issue.title }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </li>
+                {% endfor %}
+            {% else %}
+                <li class="px-4 py-8 text-center">
+                    <p class="text-gray-500">No issues found with status "{{ current_status }}"</p>
+                </li>
+            {% endif %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,146 @@
+{% extends "base/layout.html" %}
+
+{% block title %}{{ feature.title }} - Gherkin Taster{% endblock %}
+
+{% block head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/gherkin/gherkin.min.js"></script>
+<style>
+    .CodeMirror {
+        border: 1px solid #e5e7eb;
+        height: auto;
+        min-height: 400px;
+        font-size: 14px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="px-4 sm:px-0">
+    <!-- Header -->
+    <div class="mb-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900">{{ feature.title }}</h2>
+                <p class="text-sm text-gray-500 mt-1">{{ feature.issue_id }} • {{ feature.status }}</p>
+            </div>
+            <div class="flex space-x-3">
+                <button
+                    type="button"
+                    onclick="delegateFeature()"
+                    class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                >
+                    Delegate
+                </button>
+                <button
+                    type="button"
+                    hx-post="/approval/{{ feature.issue_id }}/approve"
+                    hx-swap="none"
+                    class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                >
+                    Approve & Commit
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Editor Layout -->
+    <div class="grid grid-cols-2 gap-6">
+        <!-- Left Panel: Editor -->
+        <div class="bg-white shadow sm:rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Feature File Editor</h3>
+                <form id="editor-form">
+                    <textarea id="gherkin-editor" name="content">{{ feature_content }}</textarea>
+                </form>
+
+                <!-- Syntax Feedback -->
+                <div
+                    id="syntax-feedback"
+                    hx-get="/approval/{{ feature.issue_id }}/validate"
+                    hx-trigger="load, every 2s"
+                    hx-swap="innerHTML"
+                >
+                    <!-- Loaded via HTMX -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Preview -->
+        <div class="bg-white shadow sm:rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Gherkin Preview</h3>
+                <div
+                    id="gherkin-preview"
+                    hx-get="/features/{{ feature.issue_id }}/preview"
+                    hx-trigger="load, every 2s"
+                    hx-swap="innerHTML"
+                >
+                    <!-- Loaded via HTMX -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delegation Modal (hidden by default) -->
+    <div id="delegation-modal" class="hidden fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center">
+        <div
+            id="delegation-content"
+            hx-get="/approval/{{ feature.issue_id }}/delegate-form"
+            hx-trigger="load"
+            hx-swap="innerHTML"
+        >
+            <!-- Modal content loaded via HTMX -->
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    // Initialize CodeMirror
+    const editor = CodeMirror.fromTextArea(document.getElementById('gherkin-editor'), {
+        mode: 'gherkin',
+        lineNumbers: true,
+        theme: 'default',
+        indentUnit: 2,
+        tabSize: 2,
+        lineWrapping: true
+    });
+
+    // Auto-save to localStorage every 5 seconds
+    setInterval(() => {
+        const content = editor.getValue();
+        localStorage.setItem('gherkin-draft-{{ feature.issue_id }}', content);
+    }, 5000);
+
+    // Restore from localStorage on load
+    const savedContent = localStorage.getItem('gherkin-draft-{{ feature.issue_id }}');
+    if (savedContent && savedContent !== '{{ feature_content }}') {
+        if (confirm('Found unsaved changes. Restore?')) {
+            editor.setValue(savedContent);
+        } else {
+            localStorage.removeItem('gherkin-draft-{{ feature.issue_id }}');
+        }
+    }
+
+    // Delegation modal functions
+    function delegateFeature() {
+        document.getElementById('delegation-modal').classList.remove('hidden');
+    }
+
+    function closeDelegationModal() {
+        document.getElementById('delegation-modal').classList.add('hidden');
+    }
+
+    // Listen for HTMX events
+    document.body.addEventListener('htmx:afterSwap', (event) => {
+        if (event.detail.target.id === 'delegation-content') {
+            // Modal content loaded, attach close handlers
+            document.querySelectorAll('[data-close-modal]').forEach(el => {
+                el.addEventListener('click', closeDelegationModal);
+            });
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}
