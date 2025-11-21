@@ -58,17 +58,14 @@ async def new_feature_form(request: Request):
 
 @router.post("/create")
 async def create_feature(
-    title: str = Form(...),
-    description: str = Form(""),
-    project_id: str = Form(""),
-    priority: int = Form(3),
-    labels: str = Form(""),
-    feature_file_path: str = Form(""),
+    content: str = Form(...),
 ):
-    """Create new requirement in Linear"""
-    # TODO: Implement workflow to create issue in Linear
-    # Parse labels from comma-separated string
-    label_list = [l.strip() for l in labels.split(",") if l.strip()]
+    """Create new requirement in Linear from Gherkin content"""
+    # TODO: Implement workflow to:
+    # 1. Parse Gherkin to extract feature name (use as issue title)
+    # 2. Create issue in Linear with Gherkin content as description
+    # 3. Store feature file path in custom field
+    # 4. Return issue ID and redirect to editor
 
     # For now, just redirect back to list
     return RedirectResponse(url="/features", status_code=303)

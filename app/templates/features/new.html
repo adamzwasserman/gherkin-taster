@@ -2,117 +2,49 @@
 
 {% block title %}New Requirement - Gherkin Taster{% endblock %}
 
+{% block head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/gherkin/gherkin.min.js"></script>
+<style>
+    .CodeMirror {
+        border: 1px solid #e5e7eb;
+        height: auto;
+        min-height: 400px;
+        font-size: 14px;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="px-4 sm:px-0">
     <!-- Header -->
     <div class="mb-6">
-        <h2 class="text-2xl font-bold text-gray-900">Create New Requirement</h2>
+        <h2 class="text-2xl font-bold text-gray-900">Write Gherkin Feature</h2>
         <p class="mt-1 text-sm text-gray-600">
-            Create a new feature requirement that will be tracked in Linear
+            Write your feature specification in Gherkin syntax
         </p>
     </div>
 
     <!-- Form -->
     <div class="bg-white shadow sm:rounded-lg">
-        <form action="/features/create" method="POST" class="px-4 py-5 sm:p-6">
-            <!-- Title -->
+        <form action="/features/create" method="POST" id="gherkin-form" class="px-4 py-5 sm:p-6">
+            <!-- Gherkin Editor -->
             <div class="mb-6">
-                <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
-                    Title <span class="text-red-600">*</span>
+                <label for="gherkin-content" class="block text-sm font-medium text-gray-700 mb-2">
+                    Feature Specification <span class="text-red-600">*</span>
                 </label>
-                <input
-                    type="text"
-                    id="title"
-                    name="title"
-                    required
-                    placeholder="e.g., User login with email and password"
-                    class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                />
-            </div>
+                <textarea id="gherkin-content" name="content" required style="display:none;">Feature: My New Feature
+  As a user
+  I want to do something
+  So that I can achieve a goal
 
-            <!-- Description -->
-            <div class="mb-6">
-                <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
-                    Description
-                </label>
-                <textarea
-                    id="description"
-                    name="description"
-                    rows="4"
-                    placeholder="Describe the feature requirement in detail..."
-                    class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                ></textarea>
-                <p class="mt-1 text-xs text-gray-500">
-                    This will be added as the issue description in Linear
-                </p>
-            </div>
-
-            <!-- Project Selection -->
-            <div class="mb-6">
-                <label for="project_id" class="block text-sm font-medium text-gray-700 mb-2">
-                    Project
-                </label>
-                <select
-                    id="project_id"
-                    name="project_id"
-                    class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                >
-                    <option value="">Select project (optional)</option>
-                    {% for project in projects %}
-                    <option value="{{ project.id }}">{{ project.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <!-- Priority -->
-            <div class="mb-6">
-                <label for="priority" class="block text-sm font-medium text-gray-700 mb-2">
-                    Priority
-                </label>
-                <select
-                    id="priority"
-                    name="priority"
-                    class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                >
-                    <option value="0">No priority</option>
-                    <option value="1">Urgent</option>
-                    <option value="2">High</option>
-                    <option value="3" selected>Normal</option>
-                    <option value="4">Low</option>
-                </select>
-            </div>
-
-            <!-- Labels/Tags -->
-            <div class="mb-6">
-                <label for="labels" class="block text-sm font-medium text-gray-700 mb-2">
-                    Labels
-                </label>
-                <input
-                    type="text"
-                    id="labels"
-                    name="labels"
-                    placeholder="e.g., feature, user-story, authentication (comma-separated)"
-                    class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                />
-                <p class="mt-1 text-xs text-gray-500">
-                    Enter labels separated by commas
-                </p>
-            </div>
-
-            <!-- Feature File Path -->
-            <div class="mb-6">
-                <label for="feature_file_path" class="block text-sm font-medium text-gray-700 mb-2">
-                    Feature File Path
-                </label>
-                <input
-                    type="text"
-                    id="feature_file_path"
-                    name="feature_file_path"
-                    placeholder="e.g., features/authentication/user_login.feature"
-                    class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                />
-                <p class="mt-1 text-xs text-gray-500">
-                    Path where the Gherkin feature file will be stored in the repository
+  Scenario: Example scenario
+    Given I am on the home page
+    When I click the button
+    Then I should see the result</textarea>
+                <div id="editor-container"></div>
+                <p class="mt-2 text-xs text-gray-500">
+                    Write your feature in Gherkin syntax. The feature name will be used as the issue title.
                 </p>
             </div>
 
@@ -128,10 +60,34 @@
                     type="submit"
                     class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
                 >
-                    Create Requirement
+                    Create Feature
                 </button>
             </div>
         </form>
     </div>
 </div>
+
+{% block scripts %}
+<script>
+    // Initialize CodeMirror for Gherkin editing
+    const textarea = document.getElementById('gherkin-content');
+    const editor = CodeMirror(document.getElementById('editor-container'), {
+        value: textarea.value,
+        mode: 'gherkin',
+        lineNumbers: true,
+        theme: 'default',
+        indentUnit: 2,
+        tabSize: 2,
+        lineWrapping: true
+    });
+
+    // Sync editor content back to textarea on form submit
+    document.getElementById('gherkin-form').addEventListener('submit', function() {
+        textarea.value = editor.getValue();
+    });
+
+    // Auto-focus editor
+    editor.focus();
+</script>
+{% endblock %}
 {% endblock %}
