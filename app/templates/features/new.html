@@ -1,51 +1,133 @@
 {% extends "base/layout.html" %}
 
-{% block title %}New Requirement - Gherkin Taster{% endblock %}
-
-{% block head %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/gherkin/gherkin.min.js"></script>
-<style>
-    .CodeMirror {
-        border: 1px solid #e5e7eb;
-        height: auto;
-        min-height: 400px;
-        font-size: 14px;
-    }
-</style>
-{% endblock %}
+{% block title %}New Request - Gherkin Taster{% endblock %}
 
 {% block content %}
 <div class="px-4 sm:px-0">
     <!-- Header -->
     <div class="mb-6">
-        <h2 class="text-2xl font-bold text-gray-900">Write Gherkin Feature</h2>
+        <h2 class="text-2xl font-bold text-gray-900">Create New Request</h2>
         <p class="mt-1 text-sm text-gray-600">
-            Write your feature specification in Gherkin syntax
+            Describe your feature request using text, voice, or video. AI will help generate the Gherkin specification.
         </p>
     </div>
 
     <!-- Form -->
     <div class="bg-white shadow sm:rounded-lg">
-        <form action="/features/create" method="POST" id="gherkin-form" class="px-4 py-5 sm:p-6">
-            <!-- Gherkin Editor -->
+        <form action="/features/create" method="POST" enctype="multipart/form-data" class="px-4 py-5 sm:p-6">
+            <!-- Title -->
             <div class="mb-6">
-                <label for="gherkin-content" class="block text-sm font-medium text-gray-700 mb-2">
-                    Feature Specification <span class="text-red-600">*</span>
+                <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
+                    Title <span class="text-red-600">*</span>
                 </label>
-                <textarea id="gherkin-content" name="content" required style="display:none;">Feature: My New Feature
-  As a user
-  I want to do something
-  So that I can achieve a goal
+                <input
+                    type="text"
+                    id="title"
+                    name="title"
+                    required
+                    placeholder="e.g., User login with email and password"
+                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                />
+            </div>
 
-  Scenario: Example scenario
-    Given I am on the home page
-    When I click the button
-    Then I should see the result</textarea>
-                <div id="editor-container"></div>
-                <p class="mt-2 text-xs text-gray-500">
-                    Write your feature in Gherkin syntax. The feature name will be used as the issue title.
-                </p>
+            <!-- Description -->
+            <div class="mb-6">
+                <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
+                    Description
+                </label>
+                <textarea
+                    id="description"
+                    name="description"
+                    rows="4"
+                    placeholder="Describe what needs to be built..."
+                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                ></textarea>
+            </div>
+
+            <!-- Video Upload -->
+            <div class="mb-6">
+                <label for="video" class="block text-sm font-medium text-gray-700 mb-2">
+                    Video (optional)
+                </label>
+                <input
+                    type="file"
+                    id="video"
+                    name="video"
+                    accept="video/*"
+                    class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                />
+                <p class="mt-1 text-xs text-gray-500">Upload a video explaining your request</p>
+            </div>
+
+            <!-- Voice Recording -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Voice Recording (optional)
+                </label>
+                <button
+                    type="button"
+                    id="record-btn"
+                    class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                >
+                    <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
+                    </svg>
+                    <span id="record-label">Start Recording</span>
+                </button>
+                <input type="hidden" id="audio-data" name="audio" />
+                <p class="mt-1 text-xs text-gray-500">Record your voice to describe the request</p>
+            </div>
+
+            <!-- Project Selection -->
+            <div class="mb-6">
+                <label for="project_id" class="block text-sm font-medium text-gray-700 mb-2">
+                    Project
+                </label>
+                <select
+                    id="project_id"
+                    name="project_id"
+                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                >
+                    <option value="">Select project (optional)</option>
+                    {% for project in projects %}
+                    <option value="{{ project.id }}">{{ project.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Assignee -->
+            <div class="mb-6">
+                <label for="assignee_id" class="block text-sm font-medium text-gray-700 mb-2">
+                    Assign To
+                </label>
+                <select
+                    id="assignee_id"
+                    name="assignee_id"
+                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                >
+                    <option value="">Unassigned</option>
+                    {% for user in team_members %}
+                    <option value="{{ user.id }}">{{ user.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Priority -->
+            <div class="mb-6">
+                <label for="priority" class="block text-sm font-medium text-gray-700 mb-2">
+                    Priority
+                </label>
+                <select
+                    id="priority"
+                    name="priority"
+                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                >
+                    <option value="0">No priority</option>
+                    <option value="1">Urgent</option>
+                    <option value="2">High</option>
+                    <option value="3" selected>Normal</option>
+                    <option value="4">Low</option>
+                </select>
             </div>
 
             <!-- Action Buttons -->
@@ -60,7 +142,7 @@
                     type="submit"
                     class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
                 >
-                    Create Feature
+                    Create Request & Analyze with AI
                 </button>
             </div>
         </form>
@@ -69,25 +151,60 @@
 
 {% block scripts %}
 <script>
-    // Initialize CodeMirror for Gherkin editing
-    const textarea = document.getElementById('gherkin-content');
-    const editor = CodeMirror(document.getElementById('editor-container'), {
-        value: textarea.value,
-        mode: 'gherkin',
-        lineNumbers: true,
-        theme: 'default',
-        indentUnit: 2,
-        tabSize: 2,
-        lineWrapping: true
-    });
+    // Voice recording functionality
+    let mediaRecorder;
+    let audioChunks = [];
+    let isRecording = false;
 
-    // Sync editor content back to textarea on form submit
-    document.getElementById('gherkin-form').addEventListener('submit', function() {
-        textarea.value = editor.getValue();
-    });
+    const recordBtn = document.getElementById('record-btn');
+    const recordLabel = document.getElementById('record-label');
+    const audioDataInput = document.getElementById('audio-data');
 
-    // Auto-focus editor
-    editor.focus();
+    recordBtn.addEventListener('click', async function() {
+        if (!isRecording) {
+            // Start recording
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const reader = new FileReader();
+                    reader.readAsDataURL(audioBlob);
+                    reader.onloadend = () => {
+                        audioDataInput.value = reader.result;
+                    };
+                    audioChunks = [];
+                };
+
+                mediaRecorder.start();
+                isRecording = true;
+                recordLabel.textContent = 'Stop Recording';
+                recordBtn.classList.add('bg-red-50', 'text-red-700');
+                recordBtn.classList.remove('bg-white', 'text-gray-700');
+            } catch (err) {
+                alert('Error accessing microphone: ' + err.message);
+            }
+        } else {
+            // Stop recording
+            mediaRecorder.stop();
+            mediaRecorder.stream.getTracks().forEach(track => track.stop());
+            isRecording = false;
+            recordLabel.textContent = 'Recording Saved';
+            recordBtn.classList.remove('bg-red-50', 'text-red-700');
+            recordBtn.classList.add('bg-green-50', 'text-green-700');
+
+            setTimeout(() => {
+                recordLabel.textContent = 'Start Recording';
+                recordBtn.classList.remove('bg-green-50', 'text-green-700');
+                recordBtn.classList.add('bg-white', 'text-gray-700');
+            }, 2000);
+        }
+    });
 </script>
 {% endblock %}
 {% endblock %}
