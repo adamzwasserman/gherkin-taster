@@ -60,6 +60,7 @@ async def view_feature(request: Request, issue_id: str):
 
 @router.post("/create")
 async def create_feature(
+    request_type: str = Form(...),
     title: str = Form(...),
     description: str = Form(""),
     project_id: str = Form(""),
@@ -70,14 +71,15 @@ async def create_feature(
 ):
     """Create new request in Linear and trigger AI analysis"""
     # TODO: Implement workflow:
-    # 1. Create Linear issue with title, description, priority, project, assignee
-    # 2. If video provided: upload to storage and attach to issue
-    # 3. If audio provided: decode base64, upload to storage, attach to issue
-    # 4. Add comment to issue with multimedia attachments
-    # 5. Trigger AI analysis pipeline (transcribe video/audio, generate Gherkin)
-    # 6. Store generated Gherkin in GitHub
-    # 7. Update Linear issue with GitHub file path
-    # 8. Redirect to editor with issue ID
+    # 1. Create Linear issue with title, description, priority, project, assignee, request_type
+    # 2. Set Linear label based on request_type (bug/enhancement/feature)
+    # 3. If video provided: upload to storage and attach to issue
+    # 4. If audio provided: decode base64, upload to storage, attach to issue
+    # 5. Add comment to issue with multimedia attachments
+    # 6. Trigger AI analysis pipeline (transcribe video/audio, generate Gherkin)
+    # 7. Store generated Gherkin in GitHub
+    # 8. Update Linear issue with GitHub file path
+    # 9. Redirect to editor with issue ID
 
     # For now, just redirect back to list
     return RedirectResponse(url="/features", status_code=303)
