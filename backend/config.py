@@ -17,13 +17,14 @@ class Settings(BaseSettings):
     )
 
     # Linear Configuration
-    linear_api_token: str
-    linear_org: str
-    linear_team: str
+    linear_api_token: str = ""
+    linear_org: str = "demo"
+    linear_team: str = "demo"
 
     # GitHub Configuration
-    github_api_token: str
-    github_org: str
+    github_api_token: str = ""
+    github_org: str = "demo"
+    github_repo: str = "demo-repo"
 
     # LLM Configuration (optional)
     llm_api_key: str | None = None

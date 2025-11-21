@@ -16,9 +16,9 @@ dependencies = [
     "redis>=5.0.0",
     "httpx>=0.27.0",
     "gherkin-official>=29.0.0",
-    "anthropic>=0.39.0",
-    "pygithub>=2.4.0",
-    "linear-sdk>=3.0.0",
+    # Linear and GitHub integrations will use MCP or direct API calls
+    # "anthropic>=0.39.0",  # Optional for AI commit messages
+    # "pygithub>=2.4.0",    # Optional for direct GitHub integration
 ]
 
 [project.optional-dependencies]
@@ -35,6 +35,9 @@ dev = [
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["backend", "app"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

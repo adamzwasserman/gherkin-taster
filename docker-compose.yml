@@ -3,7 +3,7 @@ services:
     build: .
     container_name: gherkin-taster-web
     ports:
-      - "8100:8000"  # External port 8100 to avoid conflict with IDD (8000)
+      - "8030:8000"  # External port 8030
     environment:
       - LINEAR_API_TOKEN=${LINEAR_API_TOKEN}
       - GITHUB_API_TOKEN=${GITHUB_API_TOKEN}
