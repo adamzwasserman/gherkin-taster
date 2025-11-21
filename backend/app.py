@@ -12,7 +12,7 @@ from fastapi.templating import Jinja2Templates
 
 from backend.config import get_settings
 from backend.middleware.auth_middleware import setup_auth_middleware
-from backend.routes import features, approval, navigation
+from backend.routes import features, approval, navigation, auth
 
 # Initialize settings
 settings = get_settings()
@@ -50,6 +50,7 @@ app.mount("/static", StaticFiles(directory="app/static"), name="static")
 templates = Jinja2Templates(directory="app/templates")
 
 # Register routes
+app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(features.router, prefix="/features", tags=["features"])
 app.include_router(approval.router, prefix="/approval", tags=["approval"])
 app.include_router(navigation.router, prefix="", tags=["navigation"])
@@ -63,9 +64,10 @@ async def health_check() -> dict[str, str]:
 
 @app.get("/")
 async def root():
-    """Root redirect to features list"""
+    """Root redirect to login or features"""
     from fastapi.responses import RedirectResponse
-    return RedirectResponse(url="/features")
+    # TODO: Check if user has session cookie, redirect to /features if yes
+    return RedirectResponse(url="/auth/login")
 
 
 if __name__ == "__main__":

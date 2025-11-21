@@ -83,10 +83,32 @@
                 ></textarea>
             </div>
 
+            <!-- Screen Recording -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Screen Recording (optional)
+                </label>
+                <button
+                    type="button"
+                    id="screen-record-btn"
+                    class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                >
+                    <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                    </svg>
+                    <span id="screen-record-label">Start Screen Recording</span>
+                </button>
+                <input type="hidden" id="screen-video-data" name="screen_video" />
+                <p class="mt-1 text-xs text-gray-500">Record your screen to demonstrate the request</p>
+                <div id="screen-preview" class="mt-2 hidden">
+                    <video id="screen-preview-player" class="w-full max-w-md border border-gray-300 rounded" controls></video>
+                </div>
+            </div>
+
             <!-- Video Upload -->
             <div class="mb-6">
                 <label for="video" class="block text-sm font-medium text-gray-700 mb-2">
-                    Video (optional)
+                    Or Upload Video (optional)
                 </label>
                 <input
                     type="file"
@@ -95,7 +117,7 @@
                     accept="video/*"
                     class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
                 />
-                <p class="mt-1 text-xs text-gray-500">Upload a video explaining your request</p>
+                <p class="mt-1 text-xs text-gray-500">Upload a video file explaining your request</p>
             </div>
 
             <!-- Voice Recording -->
@@ -241,6 +263,86 @@
                 recordLabel.textContent = 'Start Recording';
                 recordBtn.classList.remove('bg-green-50', 'text-green-700');
                 recordBtn.classList.add('bg-white', 'text-gray-700');
+            }, 2000);
+        }
+    });
+
+    // Screen recording functionality
+    let screenRecorder;
+    let screenChunks = [];
+    let isScreenRecording = false;
+
+    const screenRecordBtn = document.getElementById('screen-record-btn');
+    const screenRecordLabel = document.getElementById('screen-record-label');
+    const screenVideoDataInput = document.getElementById('screen-video-data');
+    const screenPreview = document.getElementById('screen-preview');
+    const screenPreviewPlayer = document.getElementById('screen-preview-player');
+
+    screenRecordBtn.addEventListener('click', async function() {
+        if (!isScreenRecording) {
+            // Start screen recording
+            try {
+                const stream = await navigator.mediaDevices.getDisplayMedia({
+                    video: { mediaSource: 'screen' },
+                    audio: true
+                });
+
+                screenRecorder = new MediaRecorder(stream, {
+                    mimeType: 'video/webm;codecs=vp8,opus'
+                });
+
+                screenRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        screenChunks.push(event.data);
+                    }
+                };
+
+                screenRecorder.onstop = () => {
+                    const videoBlob = new Blob(screenChunks, { type: 'video/webm' });
+
+                    // Show preview
+                    const videoUrl = URL.createObjectURL(videoBlob);
+                    screenPreviewPlayer.src = videoUrl;
+                    screenPreview.classList.remove('hidden');
+
+                    // Convert to base64 for form submission
+                    const reader = new FileReader();
+                    reader.readAsDataURL(videoBlob);
+                    reader.onloadend = () => {
+                        screenVideoDataInput.value = reader.result;
+                    };
+
+                    screenChunks = [];
+                };
+
+                // Stop recording when user stops sharing
+                stream.getVideoTracks()[0].addEventListener('ended', () => {
+                    if (isScreenRecording) {
+                        screenRecordBtn.click();
+                    }
+                });
+
+                screenRecorder.start();
+                isScreenRecording = true;
+                screenRecordLabel.textContent = 'Stop Screen Recording';
+                screenRecordBtn.classList.add('bg-red-50', 'text-red-700');
+                screenRecordBtn.classList.remove('bg-white', 'text-gray-700');
+            } catch (err) {
+                alert('Error accessing screen: ' + err.message);
+            }
+        } else {
+            // Stop screen recording
+            screenRecorder.stop();
+            screenRecorder.stream.getTracks().forEach(track => track.stop());
+            isScreenRecording = false;
+            screenRecordLabel.textContent = 'Recording Saved';
+            screenRecordBtn.classList.remove('bg-red-50', 'text-red-700');
+            screenRecordBtn.classList.add('bg-green-50', 'text-green-700');
+
+            setTimeout(() => {
+                screenRecordLabel.textContent = 'Start Screen Recording';
+                screenRecordBtn.classList.remove('bg-green-50', 'text-green-700');
+                screenRecordBtn.classList.add('bg-white', 'text-gray-700');
             }, 2000);
         }
     });

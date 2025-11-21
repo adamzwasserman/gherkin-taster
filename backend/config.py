@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     linear_api_token: str = ""
     linear_org: str = "demo"
     linear_team: str = "demo"
+    linear_oauth_client_id: str = ""
+    linear_oauth_client_secret: str = ""
 
     # GitHub Configuration
     github_api_token: str = ""

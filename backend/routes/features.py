@@ -60,6 +60,7 @@ async def view_feature(request: Request, issue_id: str):
 
 @router.post("/create")
 async def create_feature(
+    request: Request,
     request_type: str = Form(...),
     title: str = Form(...),
     description: str = Form(""),
@@ -68,20 +69,52 @@ async def create_feature(
     priority: int = Form(3),
     video: Optional[UploadFile] = File(None),
     audio: str = Form(""),
+    screen_video: str = Form(""),
 ):
     """Create new request in Linear and trigger AI analysis"""
-    # TODO: Implement workflow:
-    # 1. Create Linear issue with title, description, priority, project, assignee, request_type
-    # 2. Set Linear label based on request_type (bug/enhancement/feature)
-    # 3. If video provided: upload to storage and attach to issue
-    # 4. If audio provided: decode base64, upload to storage, attach to issue
-    # 5. Add comment to issue with multimedia attachments
-    # 6. Trigger AI analysis pipeline (transcribe video/audio, generate Gherkin)
-    # 7. Store generated Gherkin in GitHub
-    # 8. Update Linear issue with GitHub file path
-    # 9. Redirect to editor with issue ID
+    from backend.config import get_settings
 
-    # For now, just redirect back to list
+    settings = get_settings()
+
+    # Get user's Linear token from session
+    linear_token = request.cookies.get("linear_token")
+    if not linear_token:
+        return RedirectResponse(url="/auth/login", status_code=303)
+
+    # Map request type to Linear label
+    label_map = {
+        "bug": "bug",
+        "enhancement": "enhancement",
+        "feature": "feature"
+    }
+    labels = [label_map.get(request_type, "feature")]
+
+    # TODO: Use Linear MCP to create issue
+    # For now, build the data structure
+    issue_data = {
+        "title": title,
+        "description": description,
+        "team": settings.linear_team,
+        "priority": priority,
+        "labels": labels,
+    }
+
+    if project_id:
+        issue_data["project"] = project_id
+
+    if assignee_id:
+        issue_data["assignee"] = assignee_id
+
+    # TODO: Create issue via Linear API/MCP
+    # TODO: If video provided: upload to storage and attach to issue
+    # TODO: If audio provided: decode base64, upload to storage, attach to issue
+    # TODO: Add comment to issue with multimedia attachments
+    # TODO: Trigger AI analysis pipeline (transcribe video/audio, generate Gherkin)
+    # TODO: Store generated Gherkin in GitHub
+    # TODO: Update Linear issue with GitHub file path
+
+    # For now, redirect to list
+    # After Linear integration: redirect to /features/{issue_id}
     return RedirectResponse(url="/features", status_code=303)
 
 
