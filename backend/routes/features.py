@@ -25,6 +25,20 @@ async def list_features(request: Request):
     )
 
 
+@router.get("/new", response_class=HTMLResponse)
+async def new_feature_form(request: Request):
+    """Show new request form"""
+    # TODO: Fetch projects and team members from Linear
+    return templates.TemplateResponse(
+        "features/new.html",
+        {
+            "request": request,
+            "projects": [],  # Placeholder
+            "team_members": [],  # Placeholder
+        },
+    )
+
+
 @router.get("/{issue_id}", response_class=HTMLResponse)
 async def view_feature(request: Request, issue_id: str):
     """View and edit a specific feature"""
@@ -40,20 +54,6 @@ async def view_feature(request: Request, issue_id: str):
             "request": request,
             "feature": feature,
             "feature_content": "# Placeholder Gherkin content",
-        },
-    )
-
-
-@router.get("/new", response_class=HTMLResponse)
-async def new_feature_form(request: Request):
-    """Show new request form"""
-    # TODO: Fetch projects and team members from Linear
-    return templates.TemplateResponse(
-        "features/new.html",
-        {
-            "request": request,
-            "projects": [],  # Placeholder
-            "team_members": [],  # Placeholder
         },
     )
 
