@@ -44,40 +44,202 @@
         </div>
     </div>
 
-    <!-- Editor Layout -->
-    <div class="grid grid-cols-2 gap-6">
-        <!-- Left Panel: Editor -->
-        <div class="bg-white shadow sm:rounded-lg">
-            <div class="px-4 py-5 sm:p-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Feature File Editor</h3>
-                <form id="editor-form">
-                    <textarea id="gherkin-editor" name="content">{{ feature_content }}</textarea>
-                </form>
+    <!-- Tabs -->
+    <div class="border-b border-gray-200 mb-6">
+        <nav class="-mb-px flex space-x-8">
+            <button
+                onclick="showTab('gherkin')"
+                id="tab-gherkin"
+                class="tab-button border-b-2 border-indigo-500 py-4 px-1 text-sm font-medium text-indigo-600"
+            >
+                Gherkin Specification
+            </button>
+            <button
+                onclick="showTab('request')"
+                id="tab-request"
+                class="tab-button border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+            >
+                Original Request
+            </button>
+        </nav>
+    </div>
 
-                <!-- Syntax Feedback -->
-                <div
-                    id="syntax-feedback"
-                    hx-get="/approval/{{ feature.issue_id }}/validate"
-                    hx-trigger="load, every 2s"
-                    hx-swap="innerHTML"
-                >
-                    <!-- Loaded via HTMX -->
+    <!-- Gherkin Tab -->
+    <div id="content-gherkin" class="tab-content">
+        <div class="grid grid-cols-2 gap-6">
+            <!-- Left Panel: Editor -->
+            <div class="bg-white shadow sm:rounded-lg h-full">
+                <div class="px-4 py-5 sm:p-6 h-full flex flex-col">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Feature File Editor</h3>
+                    <form id="editor-form" class="flex-1 flex flex-col">
+                        <textarea id="gherkin-editor" name="content" class="flex-1">{{ feature_content }}</textarea>
+                    </form>
+
+                    <!-- Syntax Feedback -->
+                    <div
+                        id="syntax-feedback"
+                        hx-get="/approval/{{ feature.issue_id }}/validate"
+                        hx-trigger="load, every 2s"
+                        hx-swap="innerHTML"
+                        class="mt-4"
+                    >
+                        <!-- Loaded via HTMX -->
+                    </div>
+                </div>
+            </div>
+
+        <!-- Right Panel: Preview & AI Analysis -->
+        <div class="bg-white shadow sm:rounded-lg h-full">
+            <div class="px-4 py-5 sm:p-6 h-full flex flex-col">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">AI Analysis & Preview</h3>
+
+                <!-- AI Analysis Summary -->
+                {% if feature.ai_analysis %}
+                <div class="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <h4 class="font-semibold text-blue-900 mb-2">Summary</h4>
+                    <p class="text-sm text-blue-800">{{ feature.ai_analysis.summary }}</p>
+
+                    {% if feature.ai_analysis.edge_cases %}
+                    <h4 class="font-semibold text-blue-900 mt-4 mb-2">Edge Cases</h4>
+                    <ul class="list-disc list-inside text-sm text-blue-800">
+                        {% for case in feature.ai_analysis.edge_cases %}
+                        <li>{{ case }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+
+                    {% if feature.ai_analysis.technical_notes %}
+                    <h4 class="font-semibold text-blue-900 mt-4 mb-2">Technical Notes</h4>
+                    <ul class="list-disc list-inside text-sm text-blue-800">
+                        {% for note in feature.ai_analysis.technical_notes %}
+                        <li>{{ note }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Gherkin Preview -->
+                <div class="flex-1 overflow-auto">
+                    <h4 class="font-medium text-gray-700 mb-2">Rendered Gherkin</h4>
+                    <div
+                        id="gherkin-preview"
+                        hx-get="/features/{{ feature.issue_id }}/preview"
+                        hx-trigger="load, every 2s"
+                        hx-swap="innerHTML"
+                        class="prose max-w-none"
+                    >
+                        <!-- Loaded via HTMX -->
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
+    </div>
 
-        <!-- Right Panel: Preview -->
-        <div class="bg-white shadow sm:rounded-lg">
-            <div class="px-4 py-5 sm:p-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Gherkin Preview</h3>
-                <div
-                    id="gherkin-preview"
-                    hx-get="/features/{{ feature.issue_id }}/preview"
-                    hx-trigger="load, every 2s"
-                    hx-swap="innerHTML"
-                >
-                    <!-- Loaded via HTMX -->
+    <!-- Request Tab -->
+    <div id="content-request" class="tab-content hidden">
+        <div class="bg-white shadow sm:rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-6">Original Request</h3>
+
+            <!-- Metadata Grid -->
+            <div class="grid grid-cols-2 gap-6 mb-6">
+                <div>
+                    <h4 class="text-sm font-medium text-gray-500 mb-2">Request Type</h4>
+                    <p class="text-gray-900">{{ feature.request_type or 'Not specified' }}</p>
                 </div>
+                <div>
+                    <h4 class="text-sm font-medium text-gray-500 mb-2">Priority</h4>
+                    <p class="text-gray-900">{{ feature.priority_text or 'Not specified' }}</p>
+                </div>
+                <div>
+                    <h4 class="text-sm font-medium text-gray-500 mb-2">Team</h4>
+                    <p class="text-gray-900">{{ feature.team.name if feature.team else 'Not assigned' }}</p>
+                </div>
+                <div>
+                    <h4 class="text-sm font-medium text-gray-500 mb-2">Project</h4>
+                    <p class="text-gray-900">{{ feature.project.name if feature.project else 'None' }}</p>
+                </div>
+                <div>
+                    <h4 class="text-sm font-medium text-gray-500 mb-2">Assignee</h4>
+                    <p class="text-gray-900">{{ feature.assignee.name if feature.assignee else 'Unassigned' }}</p>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="mb-6">
+                <h4 class="text-sm font-medium text-gray-500 mb-2">Description</h4>
+                <div class="bg-gray-50 rounded-md p-4">
+                    <p class="text-gray-700 whitespace-pre-wrap">{{ feature.description or 'No description provided' }}</p>
+                </div>
+            </div>
+
+            <!-- Screen Recording -->
+            {% if feature.has_video %}
+            <div class="mb-6">
+                <h4 class="text-sm font-medium text-gray-500 mb-2">Screen Recording</h4>
+                <div class="bg-gray-900 rounded-md overflow-hidden">
+                    <video
+                        id="saved-screen-video"
+                        controls
+                        class="w-full"
+                        style="max-height: 400px;"
+                    >
+                        <source src="{{ feature.screen_video_url }}" type="video/webm">
+                        Your browser does not support video playback.
+                    </video>
+                </div>
+            </div>
+            {% else %}
+            <div class="mb-6">
+                <h4 class="text-sm font-medium text-gray-500 mb-2">Screen Recording</h4>
+                <div class="bg-gray-50 rounded-md p-4">
+                    <p class="text-gray-500 text-sm">No screen recording provided</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Audio Recording -->
+            {% if feature.has_audio %}
+            <div class="mb-6">
+                <h4 class="text-sm font-medium text-gray-500 mb-2">Audio Recording</h4>
+                <audio id="saved-audio" controls class="w-full">
+                    <source src="{{ feature.audio_url }}" type="audio/webm">
+                    Your browser does not support audio playback.
+                </audio>
+            </div>
+            {% else %}
+            <div class="mb-6">
+                <h4 class="text-sm font-medium text-gray-500 mb-2">Audio Recording</h4>
+                <div class="bg-gray-50 rounded-md p-4">
+                    <p class="text-gray-500 text-sm">No audio recording provided</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Actions -->
+            <div class="mt-6 flex items-center space-x-3">
+                <button
+                    type="button"
+                    onclick="editRequest()"
+                    class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                >
+                    <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                    Edit Request
+                </button>
+                <button
+                    type="button"
+                    onclick="regenerateGherkin()"
+                    class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                    {% if not feature.has_video %}disabled{% endif %}
+                >
+                    <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                    Regenerate Gherkin
+                </button>
             </div>
         </div>
     </div>
@@ -120,6 +282,69 @@
             editor.setValue(savedContent);
         } else {
             localStorage.removeItem('gherkin-draft-{{ feature.issue_id }}');
+        }
+    }
+
+    // Tab switching
+    function showTab(tabName) {
+        // Hide all tabs
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.add('hidden');
+        });
+
+        // Remove active styling from all buttons
+        document.querySelectorAll('.tab-button').forEach(btn => {
+            btn.classList.remove('border-indigo-500', 'text-indigo-600');
+            btn.classList.add('border-transparent', 'text-gray-500');
+        });
+
+        // Show selected tab
+        document.getElementById('content-' + tabName).classList.remove('hidden');
+
+        // Add active styling to selected button
+        const activeBtn = document.getElementById('tab-' + tabName);
+        activeBtn.classList.add('border-indigo-500', 'text-indigo-600');
+        activeBtn.classList.remove('border-transparent', 'text-gray-500');
+    }
+
+    // Edit request function
+    function editRequest() {
+        alert('Edit request functionality coming soon');
+    }
+
+    // Regenerate Gherkin function
+    async function regenerateGherkin() {
+        if (!confirm('This will regenerate the Gherkin specification from the saved video recording. Continue?')) {
+            return;
+        }
+
+        // Show loading state
+        const button = event.target.closest('button');
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<svg class="animate-spin -ml-1 mr-2 h-5 w-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Regenerating...';
+
+        try {
+            const response = await fetch('/features/{{ feature.issue_id }}/regenerate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert('Gherkin regenerated successfully! Reloading page...');
+                window.location.reload();
+            } else {
+                alert('Regeneration failed: ' + (result.error || 'Unknown error'));
+            }
+        } catch (error) {
+            alert('Regeneration failed: ' + error.message);
+        } finally {
+            button.disabled = false;
+            button.innerHTML = originalText;
         }
     }
 

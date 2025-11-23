@@ -4,18 +4,47 @@
 
 {% block content %}
 <div class="px-4 sm:px-0">
-    <!-- Header with Create Button -->
-    <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-bold text-gray-900">My Features</h2>
-        <a
-            href="/features/new"
-            class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-            <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-            </svg>
-            New Request
-        </a>
+    <!-- Header with Filters and Create Button -->
+    <div class="mb-6">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-2xl font-bold text-gray-900">My Features</h2>
+            <a
+                href="/features/new"
+                class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+                <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                New Request
+            </a>
+        </div>
+
+        <!-- Filters -->
+        <div class="flex items-center space-x-4">
+            <!-- Team Filter -->
+            <div class="flex items-center space-x-2">
+                <label for="team-filter" class="text-sm font-medium text-gray-700">Team:</label>
+                <select
+                    id="team-filter"
+                    class="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                    onchange="window.location.href = this.value ? '/features?team=' + this.value : '/features'"
+                >
+                    <option value="">All teams</option>
+                    {% for team in teams %}
+                    <option value="{{ team.id }}" {% if selected_team == team.id %}selected{% endif %}>
+                        {{ team.name }} ({{ team.key }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Gherkin Filter Toggle -->
+            <label class="inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="gherkin-filter" class="sr-only peer" />
+                <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                <span class="ms-3 text-sm font-medium text-gray-700">Show only with Gherkin</span>
+            </label>
+        </div>
     </div>
 
     <!-- Feature List -->
@@ -23,13 +52,20 @@
         <ul role="list" class="divide-y divide-gray-200">
             {% if features %}
                 {% for feature in features %}
-                <li>
+                <li class="feature-item" data-has-gherkin="{{ 'true' if feature.has_gherkin else 'false' }}">
                     <a href="/features/{{ feature.issue_id }}" class="block hover:bg-gray-50">
                         <div class="px-4 py-4 sm:px-6">
                             <div class="flex items-center justify-between">
-                                <p class="text-sm font-medium text-indigo-600 truncate">
-                                    {{ feature.issue_id }}
-                                </p>
+                                <div class="flex items-center space-x-2">
+                                    <p class="text-sm font-medium text-indigo-600 truncate">
+                                        {{ feature.issue_id }}
+                                    </p>
+                                    {% if feature.has_gherkin %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                                        Gherkin
+                                    </span>
+                                    {% endif %}
+                                </div>
                                 <div class="ml-2 flex-shrink-0 flex">
                                     <p class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                                         {{ feature.status }}
@@ -55,4 +91,26 @@
         </ul>
     </div>
 </div>
+
+{% block scripts %}
+<script>
+    // Gherkin filter toggle
+    const filterCheckbox = document.getElementById('gherkin-filter');
+    const featureItems = document.querySelectorAll('.feature-item');
+
+    filterCheckbox.addEventListener('change', function() {
+        const showOnlyGherkin = this.checked;
+
+        featureItems.forEach(item => {
+            const hasGherkin = item.getAttribute('data-has-gherkin') === 'true';
+
+            if (showOnlyGherkin && !hasGherkin) {
+                item.style.display = 'none';
+            } else {
+                item.style.display = '';
+            }
+        });
+    });
+</script>
+{% endblock %}
 {% endblock %}

@@ -88,18 +88,44 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                     Screen Recording (optional)
                 </label>
-                <button
-                    type="button"
-                    id="screen-record-btn"
-                    class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-                >
-                    <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-                    </svg>
-                    <span id="screen-record-label">Start Screen Recording</span>
-                </button>
+
+                <!-- Microphone Selector -->
+                <div class="mb-3">
+                    <label for="microphone-select" class="block text-xs font-medium text-gray-600 mb-1">
+                        Microphone
+                    </label>
+                    <select
+                        id="microphone-select"
+                        class="block w-full max-w-md px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                    >
+                        <option value="">Loading microphones...</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center space-x-2">
+                    <button
+                        type="button"
+                        id="screen-record-btn"
+                        class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                    >
+                        <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                        </svg>
+                        <span id="screen-record-label">Start Screen Recording</span>
+                    </button>
+                    <button
+                        type="button"
+                        id="screen-delete-btn"
+                        class="hidden inline-flex items-center px-4 py-2 border border-red-300 rounded-md shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50"
+                    >
+                        <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                        Delete Recording
+                    </button>
+                </div>
                 <input type="hidden" id="screen-video-data" name="screen_video" />
-                <p class="mt-1 text-xs text-gray-500">Record your screen to demonstrate the request</p>
+                <p class="mt-1 text-xs text-gray-500">Record your screen and selected microphone to demonstrate the request</p>
                 <div id="screen-preview" class="mt-2 hidden">
                     <video id="screen-preview-player" class="w-full max-w-md border border-gray-300 rounded" controls></video>
                 </div>
@@ -125,18 +151,51 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                     Voice Recording (optional)
                 </label>
-                <button
-                    type="button"
-                    id="record-btn"
-                    class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-                >
-                    <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
-                    </svg>
-                    <span id="record-label">Start Recording</span>
-                </button>
+                <div class="flex items-center space-x-2">
+                    <button
+                        type="button"
+                        id="record-btn"
+                        class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                    >
+                        <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
+                        </svg>
+                        <span id="record-label">Start Recording</span>
+                    </button>
+                    <button
+                        type="button"
+                        id="audio-delete-btn"
+                        class="hidden inline-flex items-center px-4 py-2 border border-red-300 rounded-md shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50"
+                    >
+                        <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                        Delete Recording
+                    </button>
+                </div>
                 <input type="hidden" id="audio-data" name="audio" />
                 <p class="mt-1 text-xs text-gray-500">Record your voice to describe the request</p>
+                <div id="audio-preview" class="mt-2 hidden">
+                    <audio id="audio-preview-player" class="w-full max-w-md" controls></audio>
+                </div>
+            </div>
+
+            <!-- Team Selection -->
+            <div class="mb-6">
+                <label for="team_id" class="block text-sm font-medium text-gray-700 mb-2">
+                    Team <span class="text-red-600">*</span>
+                </label>
+                <select
+                    id="team_id"
+                    name="team_id"
+                    required
+                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                >
+                    <option value="">Select team</option>
+                    {% for team in teams %}
+                    <option value="{{ team.id }}">{{ team.name }} ({{ team.key }})</option>
+                    {% endfor %}
+                </select>
             </div>
 
             <!-- Project Selection -->
@@ -212,6 +271,54 @@
 
 {% block scripts %}
 <script>
+    // Video compression function
+    async function compressVideo(blob) {
+        return new Promise((resolve, reject) => {
+            const video = document.createElement('video');
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            video.onloadedmetadata = () => {
+                // Reduce resolution to 720p max
+                const scale = Math.min(1, 1280 / video.videoWidth);
+                canvas.width = video.videoWidth * scale;
+                canvas.height = video.videoHeight * scale;
+
+                const stream = canvas.captureStream(15); // 15 FPS
+                const mediaRecorder = new MediaRecorder(stream, {
+                    mimeType: 'video/webm;codecs=vp8',
+                    videoBitsPerSecond: 250000 // 250 kbps
+                });
+
+                const chunks = [];
+                mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
+                mediaRecorder.onstop = () => {
+                    resolve(new Blob(chunks, { type: 'video/webm' }));
+                };
+
+                mediaRecorder.onerror = reject;
+
+                // Start recording
+                mediaRecorder.start();
+
+                // Play video and draw frames
+                video.play();
+                const drawFrame = () => {
+                    if (!video.paused && !video.ended) {
+                        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                        requestAnimationFrame(drawFrame);
+                    } else {
+                        mediaRecorder.stop();
+                    }
+                };
+                drawFrame();
+            };
+
+            video.onerror = reject;
+            video.src = URL.createObjectURL(blob);
+        });
+    }
+
     // Voice recording functionality
     let mediaRecorder;
     let audioChunks = [];
@@ -220,6 +327,9 @@
     const recordBtn = document.getElementById('record-btn');
     const recordLabel = document.getElementById('record-label');
     const audioDataInput = document.getElementById('audio-data');
+    const audioDeleteBtn = document.getElementById('audio-delete-btn');
+    const audioPreview = document.getElementById('audio-preview');
+    const audioPreviewPlayer = document.getElementById('audio-preview-player');
 
     recordBtn.addEventListener('click', async function() {
         if (!isRecording) {
@@ -234,6 +344,16 @@
 
                 mediaRecorder.onstop = () => {
                     const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+
+                    // Show preview (don't autoplay)
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    audioPreviewPlayer.src = audioUrl;
+                    audioPreviewPlayer.autoplay = false;
+                    audioPreviewPlayer.load();  // Reload without playing
+                    audioPreview.classList.remove('hidden');
+                    audioDeleteBtn.classList.remove('hidden');
+
+                    // Convert to base64 for form submission
                     const reader = new FileReader();
                     reader.readAsDataURL(audioBlob);
                     reader.onloadend = () => {
@@ -255,16 +375,18 @@
             mediaRecorder.stop();
             mediaRecorder.stream.getTracks().forEach(track => track.stop());
             isRecording = false;
-            recordLabel.textContent = 'Recording Saved';
+            recordLabel.textContent = 'Start Recording';
             recordBtn.classList.remove('bg-red-50', 'text-red-700');
-            recordBtn.classList.add('bg-green-50', 'text-green-700');
-
-            setTimeout(() => {
-                recordLabel.textContent = 'Start Recording';
-                recordBtn.classList.remove('bg-green-50', 'text-green-700');
-                recordBtn.classList.add('bg-white', 'text-gray-700');
-            }, 2000);
+            recordBtn.classList.add('bg-white', 'text-gray-700');
         }
+    });
+
+    // Delete audio recording
+    audioDeleteBtn.addEventListener('click', function() {
+        audioPreviewPlayer.src = '';
+        audioDataInput.value = '';
+        audioPreview.classList.add('hidden');
+        audioDeleteBtn.classList.add('hidden');
     });
 
     // Screen recording functionality
@@ -274,20 +396,82 @@
 
     const screenRecordBtn = document.getElementById('screen-record-btn');
     const screenRecordLabel = document.getElementById('screen-record-label');
+    const screenDeleteBtn = document.getElementById('screen-delete-btn');
     const screenVideoDataInput = document.getElementById('screen-video-data');
     const screenPreview = document.getElementById('screen-preview');
     const screenPreviewPlayer = document.getElementById('screen-preview-player');
+    const microphoneSelect = document.getElementById('microphone-select');
+
+    // Populate microphone list
+    async function loadMicrophones() {
+        try {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const audioInputs = devices.filter(device => device.kind === 'audioinput');
+
+            microphoneSelect.innerHTML = '';
+
+            if (audioInputs.length === 0) {
+                microphoneSelect.innerHTML = '<option value="">No microphones found</option>';
+                return;
+            }
+
+            // Get saved microphone preference
+            const savedMicId = localStorage.getItem('selectedMicrophone');
+
+            audioInputs.forEach((device, index) => {
+                const option = document.createElement('option');
+                option.value = device.deviceId;
+                option.textContent = device.label || `Microphone ${index + 1}`;
+
+                // Restore previous selection
+                if (device.deviceId === savedMicId) {
+                    option.selected = true;
+                }
+
+                microphoneSelect.appendChild(option);
+            });
+        } catch (err) {
+            console.error('Error loading microphones:', err);
+            microphoneSelect.innerHTML = '<option value="">Error loading microphones</option>';
+        }
+    }
+
+    // Save microphone selection when changed
+    microphoneSelect.addEventListener('change', function() {
+        localStorage.setItem('selectedMicrophone', this.value);
+    });
+
+    // Load microphones on page load
+    loadMicrophones();
 
     screenRecordBtn.addEventListener('click', async function() {
         if (!isScreenRecording) {
             // Start screen recording
             try {
-                const stream = await navigator.mediaDevices.getDisplayMedia({
+                // Get screen video
+                const displayStream = await navigator.mediaDevices.getDisplayMedia({
                     video: { mediaSource: 'screen' },
-                    audio: true
+                    audio: true  // Screen audio
                 });
 
-                screenRecorder = new MediaRecorder(stream, {
+                // Get microphone audio using selected device
+                const selectedMicId = microphoneSelect.value;
+                const audioConstraints = selectedMicId
+                    ? { audio: { deviceId: { exact: selectedMicId } }, video: false }
+                    : { audio: true, video: false };
+
+                const audioStream = await navigator.mediaDevices.getUserMedia(audioConstraints);
+
+                // Combine screen video, screen audio, and microphone audio
+                const tracks = [
+                    ...displayStream.getVideoTracks(),
+                    ...displayStream.getAudioTracks(),
+                    ...audioStream.getAudioTracks()
+                ];
+
+                const combinedStream = new MediaStream(tracks);
+
+                screenRecorder = new MediaRecorder(combinedStream, {
                     mimeType: 'video/webm;codecs=vp8,opus'
                 });
 
@@ -297,17 +481,35 @@
                     }
                 };
 
-                screenRecorder.onstop = () => {
+                screenRecorder.onstop = async () => {
                     const videoBlob = new Blob(screenChunks, { type: 'video/webm' });
 
-                    // Show preview
+                    // Show preview and delete button (don't autoplay)
                     const videoUrl = URL.createObjectURL(videoBlob);
                     screenPreviewPlayer.src = videoUrl;
+                    screenPreviewPlayer.autoplay = false;
+                    screenPreviewPlayer.muted = true;  // Ensure no audio plays
+                    screenPreviewPlayer.load();  // Reload without playing
                     screenPreview.classList.remove('hidden');
+                    screenDeleteBtn.classList.remove('hidden');
+
+                    // Compress video if over 800KB (leave room for base64 overhead)
+                    let finalBlob = videoBlob;
+                    const sizeMB = videoBlob.size / (1024 * 1024);
+
+                    if (sizeMB > 0.8) {
+                        console.log(`Video is ${sizeMB.toFixed(2)}MB, compressing...`);
+                        try {
+                            finalBlob = await compressVideo(videoBlob);
+                            console.log(`Compressed to ${(finalBlob.size / (1024 * 1024)).toFixed(2)}MB`);
+                        } catch (err) {
+                            console.error('Compression failed, using original:', err);
+                        }
+                    }
 
                     // Convert to base64 for form submission
                     const reader = new FileReader();
-                    reader.readAsDataURL(videoBlob);
+                    reader.readAsDataURL(finalBlob);
                     reader.onloadend = () => {
                         screenVideoDataInput.value = reader.result;
                     };
@@ -316,7 +518,7 @@
                 };
 
                 // Stop recording when user stops sharing
-                stream.getVideoTracks()[0].addEventListener('ended', () => {
+                displayStream.getVideoTracks()[0].addEventListener('ended', () => {
                     if (isScreenRecording) {
                         screenRecordBtn.click();
                     }
@@ -328,7 +530,7 @@
                 screenRecordBtn.classList.add('bg-red-50', 'text-red-700');
                 screenRecordBtn.classList.remove('bg-white', 'text-gray-700');
             } catch (err) {
-                alert('Error accessing screen: ' + err.message);
+                alert('Error accessing screen/microphone: ' + err.message);
             }
         } else {
             // Stop screen recording
@@ -345,6 +547,17 @@
                 screenRecordBtn.classList.add('bg-white', 'text-gray-700');
             }, 2000);
         }
+    });
+
+    // Delete recording functionality
+    screenDeleteBtn.addEventListener('click', function() {
+        screenVideoDataInput.value = '';
+        screenPreviewPlayer.src = '';
+        screenPreview.classList.add('hidden');
+        screenDeleteBtn.classList.add('hidden');
+        screenRecordLabel.textContent = 'Start Screen Recording';
+        screenRecordBtn.classList.remove('bg-green-50', 'text-green-700');
+        screenRecordBtn.classList.add('bg-white', 'text-gray-700');
     });
 </script>
 {% endblock %}
