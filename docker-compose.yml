@@ -4,10 +4,15 @@ services:
     container_name: gherkin-taster-web
     ports:
       - "8030:8000"  # External port 8030
+    env_file:
+      - .env
     environment:
       - LINEAR_API_TOKEN=${LINEAR_API_TOKEN}
+      - LINEAR_OAUTH_CLIENT_ID=${LINEAR_OAUTH_CLIENT_ID}
+      - LINEAR_OAUTH_CLIENT_SECRET=${LINEAR_OAUTH_CLIENT_SECRET}
       - GITHUB_API_TOKEN=${GITHUB_API_TOKEN}
       - LLM_API_KEY=${LLM_API_KEY:-}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
       - REDIS_URL=redis://gherkin-redis:6379/0
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
       - ENVIRONMENT=${ENVIRONMENT:-development}

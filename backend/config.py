@@ -33,6 +33,9 @@ class Settings(BaseSettings):
     llm_provider: str = "anthropic"
     llm_model: str = "claude-sonnet-4"
 
+    # Gemini Configuration
+    gemini_api_key: str = ""
+
     # Redis Configuration
     redis_url: str = "redis://localhost:6379/0"
 
