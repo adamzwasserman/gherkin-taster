@@ -49,19 +49,24 @@ async def linear_oauth_callback(request: Request, code: str):
     async with httpx.AsyncClient() as client:
         response = await client.post(
             "https://api.linear.app/oauth/token",
-            json={
+            data={
                 "client_id": settings.linear_oauth_client_id,
                 "client_secret": settings.linear_oauth_client_secret,
                 "code": code,
                 "redirect_uri": "http://localhost:8030/auth/callback",
                 "grant_type": "authorization_code",
             },
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
         )
         token_data = response.json()
+
+    # Log the response for debugging
+    print(f"Token exchange response: {token_data}")
 
     access_token = token_data.get("access_token")
 
     if not access_token:
+        print(f"Token exchange failed: {token_data}")
         return RedirectResponse(url="/auth/login?error=failed")
 
     # Get user info from Linear
