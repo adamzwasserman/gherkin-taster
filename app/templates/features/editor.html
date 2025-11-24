@@ -48,38 +48,51 @@
     <div class="border-b border-gray-200 mb-6">
         <nav class="-mb-px flex space-x-8">
             <button
-                onclick="showTab('gherkin')"
-                id="tab-gherkin"
-                class="tab-button border-b-2 border-indigo-500 py-4 px-1 text-sm font-medium text-indigo-600"
-            >
-                Gherkin Specification
-            </button>
-            <button
                 onclick="showTab('request')"
                 id="tab-request"
-                class="tab-button border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                class="tab-button border-b-2 border-indigo-500 py-4 px-1 text-sm font-medium text-indigo-600"
             >
                 Original Request
+            </button>
+            <button
+                onclick="showTab('gherkin')"
+                id="tab-gherkin"
+                class="tab-button border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+            >
+                Gherkin Specification
             </button>
         </nav>
     </div>
 
     <!-- Gherkin Tab -->
-    <div id="content-gherkin" class="tab-content">
+    <div id="content-gherkin" class="tab-content hidden">
+        <!-- Instructions -->
+        <div class="mb-4 p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
+            <h4 class="font-semibold text-indigo-900 mb-2">📝 How to Review Your Feature Specification</h4>
+            <ul class="text-sm text-indigo-800 space-y-1">
+                <li><strong>Review the specification:</strong> AI has analyzed your request and created test scenarios on the right panel</li>
+                <li><strong>Edit if needed:</strong> You can modify the specification in the editor on the left - your changes save automatically</li>
+                <li><strong>Check the preview:</strong> The right panel shows how your specification looks with clear Given/When/Then steps</li>
+                <li><strong>Approve when ready:</strong> Click "Approve & Commit" to send this specification to your development team</li>
+                <li><strong>Need changes?:</strong> Switch to "Original Request" tab to see your original submission or regenerate the specification</li>
+                <li><strong>Delegate to someone:</strong> Click "Delegate" to assign this feature request to a specific team member</li>
+            </ul>
+        </div>
+
         <div class="grid grid-cols-2 gap-6">
             <!-- Left Panel: Editor -->
             <div class="bg-white shadow sm:rounded-lg h-full">
                 <div class="px-4 py-5 sm:p-6 h-full flex flex-col">
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Feature File Editor</h3>
                     <form id="editor-form" class="flex-1 flex flex-col">
-                        <textarea id="gherkin-editor" name="content" class="flex-1">{{ feature_content }}</textarea>
+                        <textarea id="gherkin-editor" name="content" class="flex-1">{{ feature_content | safe }}</textarea>
                     </form>
 
                     <!-- Syntax Feedback -->
                     <div
                         id="syntax-feedback"
                         hx-get="/approval/{{ feature.issue_id }}/validate"
-                        hx-trigger="load, every 2s"
+                        hx-trigger="load, editorChange from:body delay:500ms"
                         hx-swap="innerHTML"
                         class="mt-4"
                     >
@@ -125,7 +138,7 @@
                     <div
                         id="gherkin-preview"
                         hx-get="/features/{{ feature.issue_id }}/preview"
-                        hx-trigger="load, every 2s"
+                        hx-trigger="load, editorChange from:body delay:500ms"
                         hx-swap="innerHTML"
                         class="prose max-w-none"
                     >
@@ -138,7 +151,7 @@
     </div>
 
     <!-- Request Tab -->
-    <div id="content-request" class="tab-content hidden">
+    <div id="content-request" class="tab-content">
         <div class="bg-white shadow sm:rounded-lg p-6">
             <h3 class="text-lg font-medium text-gray-900 mb-6">Original Request</h3>
 
@@ -259,8 +272,12 @@
 
 {% block scripts %}
 <script>
-    // Initialize CodeMirror
-    const editor = CodeMirror.fromTextArea(document.getElementById('gherkin-editor'), {
+    // Initialize CodeMirror (delay until tab is shown if hidden)
+    const editorTextarea = document.getElementById('gherkin-editor');
+    console.log('DEBUG: Textarea content length:', editorTextarea.value.length);
+    console.log('DEBUG: First 100 chars:', editorTextarea.value.substring(0, 100));
+
+    const editor = CodeMirror.fromTextArea(editorTextarea, {
         mode: 'gherkin',
         lineNumbers: true,
         theme: 'default',
@@ -269,24 +286,36 @@
         lineWrapping: true
     });
 
+    // Dispatch custom event on editor change (debounced via HTMX delay)
+    editor.on('change', function() {
+        document.body.dispatchEvent(new CustomEvent('editorChange'));
+    });
+
     // Auto-save to localStorage every 5 seconds
     setInterval(() => {
         const content = editor.getValue();
         localStorage.setItem('gherkin-draft-{{ feature.issue_id }}', content);
     }, 5000);
 
-    // Restore from localStorage on load
+    // Clear old localStorage if it contains placeholder text
     const savedContent = localStorage.getItem('gherkin-draft-{{ feature.issue_id }}');
-    if (savedContent && savedContent !== '{{ feature_content }}') {
-        if (confirm('Found unsaved changes. Restore?')) {
-            editor.setValue(savedContent);
-        } else {
-            localStorage.removeItem('gherkin-draft-{{ feature.issue_id }}');
-        }
+    if (savedContent && savedContent.includes('# No Gherkin content yet')) {
+        console.log('DEBUG: Clearing old placeholder from localStorage');
+        localStorage.removeItem('gherkin-draft-{{ feature.issue_id }}');
     }
+
+    // Force refresh to ensure CodeMirror shows current content
+    setTimeout(() => {
+        editor.refresh();
+        const currentContent = editor.getValue();
+        console.log('DEBUG: After refresh - CodeMirror content length:', currentContent.length);
+        console.log('DEBUG: First 100 chars:', currentContent.substring(0, 100));
+    }, 100);
 
     // Tab switching
     function showTab(tabName) {
+        console.log('showTab called with:', tabName);
+
         // Hide all tabs
         document.querySelectorAll('.tab-content').forEach(tab => {
             tab.classList.add('hidden');
@@ -305,6 +334,13 @@
         const activeBtn = document.getElementById('tab-' + tabName);
         activeBtn.classList.add('border-indigo-500', 'text-indigo-600');
         activeBtn.classList.remove('border-transparent', 'text-gray-500');
+
+        // Refresh CodeMirror when switching to Gherkin tab (fixes rendering issues when hidden)
+        if (tabName === 'gherkin') {
+            setTimeout(() => {
+                editor.refresh();
+            }, 10);
+        }
     }
 
     // Edit request function
@@ -322,7 +358,7 @@
         const button = event.target.closest('button');
         const originalText = button.innerHTML;
         button.disabled = true;
-        button.innerHTML = '<svg class="animate-spin -ml-1 mr-2 h-5 w-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Regenerating...';
+        button.textContent = 'Regenerating...';
 
         try {
             const response = await fetch('/features/{{ feature.issue_id }}/regenerate', {

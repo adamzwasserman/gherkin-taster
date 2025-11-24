@@ -241,12 +241,30 @@ async def view_feature(request: Request, issue_id: str):
     priority_text = ""
     ai_analysis = None
 
-    # Extract Gherkin YAML
+    # Extract Gherkin YAML (feature section only, not analysis)
+    print(f"DEBUG: Extracting Gherkin from description (length: {len(description)})")
+    print(f"DEBUG: Description contains '```yaml': {'```yaml' in description}")
+
     if "```yaml" in description:
+        import yaml
         start = description.find("```yaml") + 7
         end = description.find("```", start)
+        print(f"DEBUG: Gherkin positions - start: {start}, end: {end}")
         if end > start:
-            gherkin_content = description[start:end].strip()
+            full_yaml = description[start:end].strip()
+            # Parse YAML and extract only the feature section
+            try:
+                parsed_yaml = yaml.safe_load(full_yaml)
+                if "feature" in parsed_yaml:
+                    # Re-serialize only the feature section
+                    gherkin_content = yaml.dump({"feature": parsed_yaml["feature"]}, default_flow_style=False, sort_keys=False)
+                    print(f"DEBUG: Extracted feature-only content length: {len(gherkin_content)}")
+                else:
+                    gherkin_content = full_yaml
+                    print(f"DEBUG: No 'feature' key found, using full YAML")
+            except Exception as e:
+                print(f"DEBUG: YAML parse error: {e}, using full content")
+                gherkin_content = full_yaml
 
     # Extract AI Analysis section
     if "## AI Analysis" in description:
@@ -325,12 +343,16 @@ async def view_feature(request: Request, issue_id: str):
         "ai_analysis": ai_analysis,
     }
 
+    final_content = gherkin_content or "# No Gherkin content yet"
+    print(f"DEBUG: Passing feature_content to template (length: {len(final_content)})")
+    print(f"DEBUG: First 100 chars: {final_content[:100]}")
+
     return templates.TemplateResponse(
         "features/editor.html",
         {
             "request": request,
             "feature": feature,
-            "feature_content": gherkin_content or "# No Gherkin content yet",
+            "feature_content": final_content,
         },
     )
 
